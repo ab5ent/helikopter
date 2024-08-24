@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Helikopter.UI
+namespace Helikopter.UserInterface
 {
     [AddComponentMenu("Layout/Extensions/NonDrawingGraphic")]
     [RequireComponent(typeof(CanvasRenderer))]

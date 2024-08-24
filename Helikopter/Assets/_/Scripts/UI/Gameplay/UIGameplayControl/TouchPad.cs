@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-namespace Helikopter.UI
+namespace Helikopter.UserInterface
 {
     public class TouchPad : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
     {

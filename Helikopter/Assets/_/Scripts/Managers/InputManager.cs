@@ -1,5 +1,5 @@
 using Common;
-using Helikopter.UI;
+using Helikopter.UserInterface;
 using UnityEngine;
 
 namespace Helikopter.Managers

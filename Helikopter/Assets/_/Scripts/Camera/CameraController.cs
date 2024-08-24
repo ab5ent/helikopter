@@ -1,4 +1,5 @@
 using Helikopter.Managers;
+using System;
 using UnityEngine;
 
 namespace Helikopter
@@ -30,8 +31,24 @@ namespace Helikopter
         [SerializeField]
         private float maxYRotation = 60f;
 
+        public void SetTarget(Transform newTarget)
+        {
+            target = newTarget;
+            transform.SetParent(newTarget);
+
+            if (target)
+            {
+                transform.SetLocalPositionAndRotation(Vector3.one, Quaternion.identity);
+            }
+        }
+
         private void LateUpdate()
         {
+            if (!target)
+            {
+                return;
+            }
+
             // Get mouse input for camera rotation
             Vector2 mouseDelta = new Vector2(InputManager.Instance.LookInput.x, InputManager.Instance.LookInput.y);
             currentMouseLook.x += mouseDelta.x * rotationSpeed * Time.deltaTime;

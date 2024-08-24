@@ -1,11 +1,11 @@
 using Helikopter.Managers;
 using UnityEngine;
 
-namespace Helikopter.UI
+namespace Helikopter.UserInterface
 {
     public class LookTouchPadFetch : MonoBehaviour
     {
-        private void Start()
+        public void Initialize()
         {
             InputManager.Instance.LookTouchPad = GetComponent<TouchPad>();
         }
