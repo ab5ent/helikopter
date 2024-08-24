@@ -2,6 +2,8 @@ using System;
 using UnityEngine;
 using DG.Tweening;
 using UnityEngine.Events;
+using Cinemachine.Utility;
+using Helikopter.Managers;
 
 namespace Helikopter
 {
@@ -14,6 +16,9 @@ namespace Helikopter
 
         [SerializeField]
         private BladesRotator subBladeRotator;
+
+        [SerializeField]
+        private GameObject model;
 
         #region Configures
 
@@ -50,6 +55,9 @@ namespace Helikopter
         private float turnForce;
 
         [SerializeField]
+        private float rotateSpeed;
+
+        [SerializeField]
         private float turnForceHelper = 1.5F;
 
         [Header("Tilts")]
@@ -67,6 +75,9 @@ namespace Helikopter
 
         #region Variables
 
+        [SerializeField]
+        private bool isOnGround;
+
         private HelicopterStates state;
 
         private float enginePower;
@@ -75,11 +86,15 @@ namespace Helikopter
 
         private Vector2 movement = Vector2.zero;
 
-        private bool isOnGround;
-
         private RaycastHit groundRaycastHit;
 
         private Vector2 tilting = Vector2.zero;
+
+        private Transform cameraTransform;
+
+        private Vector3 cameraForward;
+
+        private Vector3 cameraRight;
 
         #endregion
 
@@ -113,6 +128,9 @@ namespace Helikopter
             helicopterRigid = GetComponent<Rigidbody>();
             state = HelicopterStates.OnGround;
 
+            cameraTransform = Camera.main.transform;
+            tilting = new Vector2();
+
             onTakeOff += GetComponentInChildren<BrownianMotionController>().StartMotion;
             onLand += GetComponentInChildren<BrownianMotionController>().StopMotion;
         }
@@ -121,12 +139,11 @@ namespace Helikopter
         {
             HandleGroundCheck();
             HandleInputs();
-            HandleInvokes();
-            HandleEngine();
         }
 
         private void FixedUpdate()
         {
+            HandleRotateTowardCameraFoward();
             HelicopterHover();
             HelicopterMovements();
             HelicopterTilting();
@@ -146,10 +163,10 @@ namespace Helikopter
         {
             if (!isOnGround)
             {
-                movement.x = Input.GetAxis("Horizontal");
-                movement.y = Input.GetAxis("Vertical");
+                movement.x = InputManager.Instance.MoveInput.x;
+                movement.y = InputManager.Instance.MoveInput.y;
 
-                if (Input.GetKey(KeyCode.C))
+                if (Input.GetKeyDown(KeyCode.C))
                 {
                     EnginePower -= engineLift;
 
@@ -164,7 +181,7 @@ namespace Helikopter
             {
                 EnginePower += engineLift;
             }
-            else if (Input.GetAxis("Vertical") > 0 && !isOnGround)
+            else if (movement.x > 0 && !isOnGround)
             {
                 EnginePower = Mathf.Lerp(EnginePower, 17.5f, 0.003f);
 
@@ -175,30 +192,18 @@ namespace Helikopter
             }
         }
 
-        private void HandleEngine()
+        private void HandleRotateTowardCameraFoward()
         {
-            if (Input.GetKeyDown(KeyCode.X))
+            if (isOnGround)
             {
-                StartEngine();
+                return;
             }
-            else if (Input.GetKeyDown(KeyCode.Y) && isOnGround)
-            {
-                StopEngine();
-            }
-        }
 
-        private void HandleInvokes()
-        {
-            if (!isOnGround && state == HelicopterStates.OnGround)
-            {
-                onTakeOff?.Invoke();
-                state = HelicopterStates.OnAir;
-            }
-            else if (isOnGround && state == HelicopterStates.OnAir)
-            {
-                onLand?.Invoke();
-                state = HelicopterStates.OnGround;
-            }
+            Vector3 targetDirection = cameraTransform.forward.ProjectOntoPlane(Vector3.up);
+            Quaternion targetRotation = Quaternion.LookRotation(targetDirection);
+
+            Quaternion smoothedRotation = Quaternion.Slerp(helicopterRigid.rotation, targetRotation, rotateSpeed * Time.fixedDeltaTime);
+            helicopterRigid.MoveRotation(smoothedRotation);
         }
 
         private void HelicopterHover()
@@ -210,43 +215,48 @@ namespace Helikopter
 
         private void HelicopterMovements()
         {
-            if (Input.GetAxis("Vertical") > 0)
+            if (isOnGround)
             {
-                helicopterRigid.AddRelativeForce(Vector3.forward * Mathf.Max(0, movement.y * forwardForce * helicopterRigid.mass));
-            }
-            else if (Input.GetAxis("Vertical") < 0)
-            {
-                helicopterRigid.AddRelativeForce(Vector3.back * Mathf.Max(0, -movement.y * backwardForce * helicopterRigid.mass));
+                return;
             }
 
-            float turn = turnForce * Mathf.Lerp(movement.x, movement.x * (turnForceHelper - Mathf.Abs(movement.y)), Mathf.Max(0, movement.y));
-            turning = Mathf.Lerp(turning, turn, Time.fixedDeltaTime * turnForce);
-            helicopterRigid.AddRelativeTorque(0, turning * helicopterRigid.mass, 0);
+            helicopterRigid.AddForce(transform.forward * movement.y * Mathf.Max(0, forwardForce * helicopterRigid.mass) * Time.fixedDeltaTime, ForceMode.Impulse);
+            helicopterRigid.AddForce(transform.right * movement.x * Mathf.Max(0, turnForce * helicopterRigid.mass) * Time.fixedDeltaTime, ForceMode.Impulse);
         }
 
         private void HelicopterTilting()
         {
+            if (isOnGround)
+            {
+                return;
+            }
+
             tilting.y = Mathf.Lerp(tilting.y, movement.y * forwardTiltForce, Time.fixedDeltaTime);
             tilting.x = Mathf.Lerp(tilting.x, movement.x * turnTiltForce, Time.fixedDeltaTime);
-
-            helicopterRigid.transform.localRotation = Quaternion.Euler(tilting.y, helicopterRigid.transform.localEulerAngles.y, -tilting.x);
+            model.transform.localRotation = Quaternion.Euler(-tilting.y, model.transform.localEulerAngles.y, tilting.x);
         }
 
         private void HandleGroundCheck()
         {
-            Ray ray = new Ray(transform.position, transform.TransformDirection(Vector3.down));
+            Ray ray = new Ray(transform.position, transform.TransformDirection(Vector3.down).normalized);
 
             if (Physics.Raycast(ray, out groundRaycastHit, 3000, groundLayerMask))
             {
-                isOnGround = groundRaycastHit.distance < 2;
+                isOnGround = groundRaycastHit.distance < 1;
             }
+
+            Debug.DrawLine(transform.position, isOnGround ? groundRaycastHit.point : ray.direction * 100, isOnGround ? Color.green : Color.red);
         }
 
         #region StartAndStopEngine
 
         public void StartEngine()
         {
-            DOTween.To(Starting, 0, startEngineSpeed, startEngineDuration);
+            DOTween.To(Starting, 0, startEngineSpeed, startEngineDuration).OnComplete(() =>
+            {
+                onTakeOff?.Invoke();
+                state = HelicopterStates.OnAir;
+            });
         }
 
         public void Starting(float value)
@@ -256,7 +266,11 @@ namespace Helikopter
 
         public void StopEngine()
         {
-            DOTween.To(Stopping, 0, 0, stopEngineDuration);
+            DOTween.To(Stopping, 0, 0, stopEngineDuration).OnComplete(() =>
+            {
+                onLand?.Invoke();
+                state = HelicopterStates.OnGround;
+            });
         }
 
         public void Stopping(float value)

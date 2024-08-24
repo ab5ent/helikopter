@@ -21,7 +21,9 @@ namespace Helikopter
         {
             brownianMotion = GetComponent<BrownianMotion>();
             brownianMotion.positionFrequency = 0;
+            brownianMotion.enablePositionNoise = true;
             brownianMotion.rotationFrequency = 0;
+            brownianMotion.enableRotationNoise = false;
         }
 
         public void StartMotion()
