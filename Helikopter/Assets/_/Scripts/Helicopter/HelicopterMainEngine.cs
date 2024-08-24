@@ -2,7 +2,6 @@ using System;
 using UnityEngine;
 using DG.Tweening;
 using UnityEngine.Events;
-using Cinemachine.Utility;
 using Helikopter.Managers;
 
 namespace Helikopter
@@ -199,7 +198,7 @@ namespace Helikopter
                 return;
             }
 
-            Vector3 targetDirection = cameraTransform.forward.ProjectOntoPlane(Vector3.up);
+            Vector3 targetDirection = Vector3.ProjectOnPlane(cameraTransform.forward, Vector3.up);
             Quaternion targetRotation = Quaternion.LookRotation(targetDirection);
 
             Quaternion smoothedRotation = Quaternion.Slerp(helicopterRigid.rotation, targetRotation, rotateSpeed * Time.fixedDeltaTime);
