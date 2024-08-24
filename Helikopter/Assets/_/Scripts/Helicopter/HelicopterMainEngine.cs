@@ -56,9 +56,6 @@ namespace Helikopter
         [SerializeField]
         private float rotateSpeed;
 
-        [SerializeField]
-        private float turnForceHelper = 1.5F;
-
         [Header("Tilts")]
         [SerializeField]
         private float forwardTiltForce;
