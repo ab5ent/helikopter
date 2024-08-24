@@ -12,17 +12,24 @@ namespace Helikopter.UserInterface
         private LookTouchPadFetch lookTouchPadFetch;
 
         [SerializeField]
-        private Button startEngineBtn;
-
-        [SerializeField]
-        private Button fireBtn;
+        private Button buttonStartEngine;
 
         public void Initialize()
         {
             moveJoystickFetch.Initialize();
             lookTouchPadFetch.Initialize();
-            startEngineBtn.onClick.AddListener(GameManager.Instance.CurrentHelicopter.StartEngine);
-            //fireBtn.onClick.AddListener(GameManager.Instance.CurrentHelicopter.Shoot);
+
+            buttonStartEngine.onClick.AddListener(GameManager.Instance.CurrentHelicopter.StartEngine);
+        }
+
+        private void OnEnable()
+        {
+            buttonStartEngine.gameObject.SetActive(!GameManager.Instance.HelicopterManager.IsStartedEngine);
+        }
+
+        public void DisableStartEngineButton()
+        {
+            buttonStartEngine.gameObject.SetActive(false);
         }
     }
 }

@@ -1,3 +1,4 @@
+using R3;
 using UnityEngine;
 
 namespace Helikopter.Managers
@@ -21,5 +22,7 @@ namespace Helikopter.Managers
             CurrentHelicopter = Instantiate(helicopters[index], transform);
             CurrentHelicopter.Initialize();
         }
+
+        public bool IsStartedEngine => CurrentHelicopter && CurrentHelicopter.IsStartedEngine;
     }
 }

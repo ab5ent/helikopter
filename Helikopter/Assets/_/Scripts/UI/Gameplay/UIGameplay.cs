@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Helikopter.UserInterface
 {
-    public class UIGameplay : MonoBehaviour
+    public class UIGameplay : UIScreen
     {
         [field: SerializeField]
         public UIGameplayControl Control { get; private set; }

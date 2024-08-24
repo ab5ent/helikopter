@@ -29,7 +29,7 @@ namespace Helikopter
             Target = new SerializableReactiveProperty<Enemy>();
             sqrAttackRange = attackRange * attackRange;
             enemies = EnemiesManager.Instance.RuntimeVariables.ListEnemies;
-            Target.Subscribe(UIManager.Instance.Gameplay.HUD.Crosshair.OnTargetChange);
+            Target.Subscribe(UIManager.Instance.GetScreen<UIGameplay>().HUD.Crosshair.OnTargetChange);
         }
 
         private void Update()

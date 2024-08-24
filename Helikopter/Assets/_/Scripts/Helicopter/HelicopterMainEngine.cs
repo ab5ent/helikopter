@@ -3,6 +3,7 @@ using UnityEngine;
 using DG.Tweening;
 using UnityEngine.Events;
 using Helikopter.Managers;
+using Helikopter.UserInterface;
 
 namespace Helikopter
 {
@@ -71,10 +72,10 @@ namespace Helikopter
 
         #region Variables
 
-        [SerializeField]
-        private bool isOnGround;
+        [field: SerializeField]
+        public bool IsOnGround { get; private set; }
 
-        private HelicopterStates state;
+        public HelicopterStates State { get; private set; }
 
         private float enginePower;
 
@@ -87,10 +88,6 @@ namespace Helikopter
         private Vector2 tilting = Vector2.zero;
 
         private Transform cameraTransform;
-
-        private Vector3 cameraForward;
-
-        private Vector3 cameraRight;
 
         #endregion
 
@@ -122,12 +119,13 @@ namespace Helikopter
         private void Awake()
         {
             helicopterRigid = GetComponent<Rigidbody>();
-            state = HelicopterStates.OnGround;
+            State = HelicopterStates.Unstarted;
 
             cameraTransform = Camera.main.transform;
             tilting = new Vector2();
 
             onTakeOff += GetComponentInChildren<BrownianMotionController>().StartMotion;
+            onTakeOff += UIManager.Instance.GetScreen<UIGameplay>().Control.DisableStartEngineButton;
             onLand += GetComponentInChildren<BrownianMotionController>().StopMotion;
         }
 
@@ -157,7 +155,7 @@ namespace Helikopter
 
         private void HandleInputs()
         {
-            if (!isOnGround)
+            if (!IsOnGround)
             {
                 movement.x = InputManager.Instance.MoveInput.x;
                 movement.y = InputManager.Instance.MoveInput.y;
@@ -177,12 +175,12 @@ namespace Helikopter
             {
                 EnginePower += engineLift;
             }
-            else if (movement.x > 0 && !isOnGround)
+            else if (movement.x > 0 && !IsOnGround)
             {
                 EnginePower = Mathf.Lerp(EnginePower, 17.5f, 0.003f);
 
             }
-            else if (Input.GetAxis("Throttle") < 0.5f && !isOnGround)
+            else if (Input.GetAxis("Throttle") < 0.5f && !IsOnGround)
             {
                 EnginePower = Mathf.Lerp(EnginePower, 10, 0.003f);
             }
@@ -190,7 +188,7 @@ namespace Helikopter
 
         private void HandleRotateTowardCameraFoward()
         {
-            if (isOnGround)
+            if (IsOnGround)
             {
                 return;
             }
@@ -211,7 +209,7 @@ namespace Helikopter
 
         private void HelicopterMovements()
         {
-            if (isOnGround)
+            if (IsOnGround)
             {
                 return;
             }
@@ -222,7 +220,7 @@ namespace Helikopter
 
         private void HelicopterTilting()
         {
-            if (isOnGround)
+            if (IsOnGround)
             {
                 return;
             }
@@ -238,10 +236,10 @@ namespace Helikopter
 
             if (Physics.Raycast(ray, out groundRaycastHit, 3000, groundLayerMask))
             {
-                isOnGround = groundRaycastHit.distance < 1;
+                IsOnGround = groundRaycastHit.distance < 1;
             }
 
-            Debug.DrawLine(transform.position, isOnGround ? groundRaycastHit.point : ray.direction * 100, isOnGround ? Color.green : Color.red);
+            Debug.DrawLine(transform.position, IsOnGround ? groundRaycastHit.point : ray.direction * 100, IsOnGround ? Color.green : Color.red);
         }
 
         #region StartAndStopEngine
@@ -251,7 +249,7 @@ namespace Helikopter
             DOTween.To(Starting, 0, startEngineSpeed, startEngineDuration).OnComplete(() =>
             {
                 onTakeOff?.Invoke();
-                state = HelicopterStates.OnAir;
+                State = HelicopterStates.OnAir;
             });
         }
 
@@ -265,7 +263,7 @@ namespace Helikopter
             DOTween.To(Stopping, 0, 0, stopEngineDuration).OnComplete(() =>
             {
                 onLand?.Invoke();
-                state = HelicopterStates.OnGround;
+                State = HelicopterStates.OnGround;
             });
         }
 

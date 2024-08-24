@@ -1,5 +1,6 @@
 using Common;
 using EnemyNamespace;
+using Helikopter;
 using System;
 using UnityEngine;
 
@@ -41,16 +42,23 @@ namespace Enemies
             TargetAssign.SetManager(this);
 
             RuntimeVariables.Initialize();
+            currentProcessor = new EnemiesProcessor(this);
         }
 
-        public void LoadEnemies()
+        public void ClearAllEnemies()
         {
-            currentProcessor = new EnemiesProcessor(this);
+            ClearEnemies();
+            ClearBosses();
+        }
+
+        public void StartSpawnEnemies()
+        {
+            Enemy.SetFocusObject(GameManager.Instance.CurrentHelicopter.gameObject);
+            currentProcessor.SetCanUpdate(true);
         }
 
         private void Update()
         {
-            currentProcessor?.OnUpdate();
             currentProcessor?.OnSlowUpdate();
         }
 
@@ -83,6 +91,26 @@ namespace Enemies
             boss.SetStats(stats.Item1, stats.Item2, stats.Item3);
 
             return boss;
+        }
+
+        public void ClearEnemies()
+        {
+            while (RuntimeVariables.ListEnemies.Count > 0)
+            {
+                Enemy enemy = RuntimeVariables.ListEnemies[0];
+                RuntimeVariables.RemoveEnemy(enemy);
+                Pool.Despawn(enemy);
+            }
+        }
+
+        public void ClearBosses()
+        {
+            while (RuntimeVariables.ListBosses.Count > 0)
+            {
+                Boss boss = RuntimeVariables.ListBosses[0];
+                RuntimeVariables.RemoveBoss(boss);
+                Pool.Despawn(boss);
+            }
         }
 
         #endregion

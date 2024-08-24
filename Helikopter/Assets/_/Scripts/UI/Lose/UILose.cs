@@ -1,21 +1,17 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-namespace Helikopter
+namespace Helikopter.UserInterface
 {
-    public class UILose : MonoBehaviour
+    public class UILose : UIScreen
     {
         // Start is called before the first frame update
         void Start()
         {
-        
+
         }
 
         // Update is called once per frame
         void Update()
         {
-        
+
         }
     }
 }

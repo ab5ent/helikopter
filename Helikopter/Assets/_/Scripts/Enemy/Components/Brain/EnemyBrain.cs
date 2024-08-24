@@ -19,18 +19,13 @@ namespace EnemyNamespace
 
         public void OnEnter()
         {
-            SetBehaviour(enemy.GetEnemyBehaviour<EnemyOnSpawnBehaviour>());
+            SetBehaviour(enemy.GetEnemyBehaviour<EnemyIdleBehaviour>());
         }
 
         public void OnUpdate()
         {
             SlowUpdate();
             enemyBehaviour.OnUpdate();
-        }
-
-        public void OnExit()
-        {
-
         }
 
         public void SlowUpdate()

@@ -20,28 +20,28 @@ namespace Enemies
 
         public int CountEntities => ListBosses.Count + ListEnemies.Count;
 
-        internal void Initialize()
+        public void Initialize()
         {
             ListEnemies = new List<Enemy>();
             ListBosses = new List<Boss>();
         }
 
-        internal void AddEnemy(Enemy enemy)
+        public void AddEnemy(Enemy enemy)
         {
             ListEnemies.Add(enemy);
         }
 
-        internal void AddBoss(Boss boss)
+        public void AddBoss(Boss boss)
         {
             ListBosses.Add(boss);
         }
 
-        internal void RemoveEnemy(Enemy enemy)
+        public void RemoveEnemy(Enemy enemy)
         {
             ListEnemies.Remove(enemy);
         }
 
-        internal void RemoveBoss(Boss boss)
+        public void RemoveBoss(Boss boss)
         {
             ListBosses.Remove(boss);
         }

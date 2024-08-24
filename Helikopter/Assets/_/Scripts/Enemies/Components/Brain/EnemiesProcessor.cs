@@ -3,7 +3,6 @@ using Helikopter;
 using System;
 using UnityEngine;
 
-
 namespace Enemies
 {
     [Serializable]
@@ -18,21 +17,27 @@ namespace Enemies
 
         protected float lastTimeSpawnBoss;
 
+        protected bool canUpdate;
+
         public EnemiesProcessor(EnemiesManager enemiesManager)
         {
             lastTimeSpawnBoss = Time.time - 60;
             manager = enemiesManager;
             lastTimeFromSlowUpdate = Time.time - 60;
-            Enemy.SetFocusObject(GameManager.Instance.CurrentHelicopter.gameObject);
         }
 
-        public void OnUpdate()
+        public void SetCanUpdate(bool canUpdate)
         {
-
+            this.canUpdate = canUpdate;
         }
 
         public void OnSlowUpdate()
         {
+            if (!canUpdate)
+            {
+                return;
+            }
+
             if (Time.time - lastTimeFromSlowUpdate > SLOW_UPDATE_INTERVAL)
             {
                 CheckAndSpawnEnemy();
